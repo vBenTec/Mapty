@@ -1,0 +1,19 @@
+{
+  "name": "mapty",
+  "version": "1.0.0",
+  "description": "Mapty web application",
+  "main": "other.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenChis/mapty.git"
+  },
+  "author": "Jonas Schmedtmann, Benjamin Scharf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BenChis/mapty/issues"
+  },
+  "homepage": "https://github.com/BenChis/mapty#readme"
+}
