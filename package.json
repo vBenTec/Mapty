@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/BenChis/mapty/issues"
   },
-  "homepage": "https://github.com/BenChis/mapty#readme"
+  "homepage": "https://github.com/BenChis/mapty#readme",
+  "dependencies": {
+    "leaflet": "^1.7.1"
+  }
 }
