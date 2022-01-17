@@ -1,10 +1,11 @@
 {
   "name": "mapty",
+  "source": "index.html",
   "version": "1.0.0",
   "description": "Mapty web application",
-  "main": "other.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "parcel",
+    "build": "parcel build"
   },
   "repository": {
     "type": "git",
@@ -18,5 +19,8 @@
   "homepage": "https://github.com/BenChis/mapty#readme",
   "dependencies": {
     "leaflet": "^1.7.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.2.0"
   }
 }
