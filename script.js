@@ -76,6 +76,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const deleteAllWorkoutBtn = document.querySelector('.btn-reset');
 
 class App {
   #map;
@@ -142,6 +143,16 @@ class App {
     this.#mapEvent = mapE;
     form.classList.remove('hidden');
     inputDistance.focus();
+  }
+
+  _toggleRemoveAllBtn() {
+    if (this.#workouts === []) {
+      console.log('💥 Hide remove all btn');
+      deleteAllWorkoutBtn.classList.add('btn-reset--hidden');
+    } else {
+      console.log('✅ Show remove all btn');
+      deleteAllWorkoutBtn.classList.remove('btn-reset--hidden');
+    }
   }
 
   _hideForm() {
@@ -219,6 +230,9 @@ class App {
 
     // Hide form + clear input fields
     this._hideForm();
+
+    // Show deleteAllBtn or not
+    this._toggleRemoveAllBtn();
 
     // Set local storage to all workouts
     this._setLocalStorage();
@@ -354,6 +368,16 @@ class App {
 
     // Delete marker on map
     location.reload();
+  }
+
+  _removeAllWorkouts() {
+    // Removing all workouts from the DOM
+    const allWorkouts = document.querySelectorAll('.workout');
+    console.log(allWorkouts);
+    allWorkouts.forEach(workout => workout.remove());
+
+    // Clearing local storage
+    this.reset();
   }
 
   _setLocalStorage() {

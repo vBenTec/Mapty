@@ -40,6 +40,14 @@ a:visited {
   color: var(--color-brand--1);
 }
 
+button {
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-light--2);
+}
+
 /* SIDEBAR */
 .sidebar {
   flex-basis: 50rem;
@@ -47,12 +55,36 @@ a:visited {
   padding: 3rem 5rem 4rem 5rem;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 9rem;
+  transition: transform 250ms;
+}
+
+.btn-reset--hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.btn-reset:hover {
+  transform: scale(1.1) translateY(-0.4rem);
+  text-decoration: underline;
 }
 
 .logo {
   height: 5.2rem;
   align-self: center;
   margin-bottom: 4rem;
+}
+
+.btn-reset__icon {
+  height: 2.2rem;
+  margin-right: 0.5rem;
 }
 
 .workouts {
