@@ -336,17 +336,24 @@ class App {
 
     setTimeout(() => workoutEl.remove(), 250);
 
-    // Delete workout from Local Storage
+    const updatedWorkouts = this.#workouts.filter(workout => {
+      console.log(workout.id, workoutEl.dataset.id);
+      return workout.id !== workoutEl.dataset.id;
+    });
 
-    console.log(workoutEl.id);
-    const updatedWorkouts = this.#workouts.filter(
-      workout => workout.id !== workoutEl.dataset.id
-    );
+    this.#workouts = updatedWorkouts;
 
     console.log(updatedWorkouts);
     console.log(this.#workouts);
     console.log(workoutEl);
     console.log(deleteIcon);
+
+    // Delete workout from Local Storage
+    localStorage.removeItem('workouts');
+    this._setLocalStorage();
+
+    // Delete marker on map
+    location.reload();
   }
 
   _setLocalStorage() {
