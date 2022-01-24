@@ -245,7 +245,15 @@ class App {
     console.log(workout);
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
-        <h2 class="workout__title">${workout.description}</h2>
+        <div class=workout__heading-container>
+          <h2 class="workout__title">${workout.description}</h2>
+          <div class="workout__icon-delete">
+          <span class="trash">
+              <span></span>
+              <i></i>
+            </span>
+        </div>
+        </div>
         <div class="workout__details">
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'
@@ -302,7 +310,7 @@ class App {
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
-    console.log(workout);
+    // console.log(workout);
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,

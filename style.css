@@ -84,10 +84,106 @@ a:visited {
   border-left: 5px solid var(--color-brand--1);
 }
 
+.workout__heading-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  grid-column: 1 / -1;
+  height: 5rem;
+}
+
 .workout__title {
   font-size: 1.7rem;
   font-weight: 600;
-  grid-column: 1 / -1;
+}
+
+.workout__icon-delete {
+  /* height: 2.4rem; */
+  /* fill: currentColor; */
+  transform: scale(0.15);
+}
+
+.trash {
+  background: var(--color-light--2);
+  width: 66px;
+  height: 80px;
+  display: inline-block;
+  margin: 0 auto;
+
+  position: relative;
+  -webkit-border-bottom-right-radius: 6px;
+  -webkit-border-bottom-left-radius: 6px;
+  -moz-border-radius-bottomright: 6px;
+  -moz-border-radius-bottomleft: 6px;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.trash span {
+  position: absolute;
+  height: 12px;
+  background: var(--color-light--1);
+  top: -19px;
+  left: -10px;
+  right: -10px;
+
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  transform: rotate(0deg);
+  transition: transform 250ms;
+  transform-origin: 19% 100%;
+}
+.trash span:after {
+  content: '';
+  position: absolute;
+  width: 27px;
+  height: 7px;
+  background: var(--color-light--1);
+  top: -10px;
+
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  transform: rotate(0deg);
+  transition: transform 250ms;
+  transform-origin: 19% 100%;
+  left: 27px;
+}
+
+.trash i {
+  position: relative;
+  width: 5px;
+  height: 50px;
+  background: var(--color-dark--1);
+  display: block;
+  margin: 14px auto;
+  border-radius: 5px;
+}
+.trash i:after {
+  content: '';
+  width: 5px;
+  height: 50px;
+  background: var(--color-dark--1);
+  position: absolute;
+  left: -18px;
+  border-radius: 5px;
+}
+.trash i:before {
+  content: '';
+  width: 5px;
+  height: 50px;
+  background: var(--color-dark--1);
+  position: absolute;
+  right: -18px;
+  border-radius: 5px;
+}
+
+.trash:hover span {
+  transform: rotate(-45deg);
+  transition: transform 250ms;
+}
+
+.workout__icon-delete:hover {
+  fill: var(--color-dark--1);
 }
 
 .workout__details {
@@ -111,6 +207,10 @@ a:visited {
   color: var(--color-light--1);
   text-transform: uppercase;
   font-weight: 800;
+}
+
+.workout__value:hover {
+  text-decoration: underline;
 }
 
 .form {
