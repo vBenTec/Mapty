@@ -96,6 +96,7 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
   }
 
   _getPosition() {
@@ -321,6 +322,31 @@ class App {
 
     // Using the public interface
     // workout.click();
+  }
+
+  _deleteWorkout(e) {
+    const workoutEl = e.target.closest('.workout');
+    const deleteIcon = e.target.closest('.workout__icon-delete');
+
+    if (!deleteIcon || !workoutEl) return;
+
+    // Delete workout from the DOM
+    workoutEl.style.transform = 'translateX(2rem)';
+    workoutEl.style.opacity = 0;
+
+    setTimeout(() => workoutEl.remove(), 250);
+
+    // Delete workout from Local Storage
+
+    console.log(workoutEl.id);
+    const updatedWorkouts = this.#workouts.filter(
+      workout => workout.id !== workoutEl.dataset.id
+    );
+
+    console.log(updatedWorkouts);
+    console.log(this.#workouts);
+    console.log(workoutEl);
+    console.log(deleteIcon);
   }
 
   _setLocalStorage() {
