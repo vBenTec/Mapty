@@ -3,16 +3,24 @@
 // const { number } = require('assert-plus');
 
 class Workout {
-  date = new Date();
-  id = (Date.now() + '').slice(-10);
+  // date = new Date();
+  // id = (Date.now() + '').slice(-10);
   clicks = 0;
 
-  constructor(coords, distance, duration) {
+  constructor(
+    coords,
+    distance,
+    duration,
+    date = new Date(),
+    id = (Date.now() + '').slice(-10)
+  ) {
     // this.date = ...
     // this.id = ....
     this.coords = coords; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
+    this.date = date;
+    this.id = id;
   }
 
   _setDescription() {
@@ -32,8 +40,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, cadence, date, id) {
+    super(coords, distance, duration, date, id);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -48,8 +56,8 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elevationGain) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, elevationGain, date, id) {
+    super(coords, distance, duration, date, id);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -339,7 +347,7 @@ class App {
     const workoutEl = e.target.closest('.workout');
 
     if (workoutEl === null) return;
-    console.log(workoutEl);
+    // console.log(workoutEl);
 
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
@@ -354,7 +362,7 @@ class App {
     });
 
     // Using the public interface
-    // workout.click();
+    workout.click();
   }
 
   _deleteWorkout(e) {
@@ -402,6 +410,7 @@ class App {
   _editWorkouts(e) {
     // console.log(e.target);
     e.preventDefault();
+    const currElParrent = e.target.closest('.workout');
     const value = e.target.closest('.workout__value');
     if (!value) return;
 
@@ -431,6 +440,14 @@ class App {
         const userInputValue = userInputField.value;
         // console.log(userInputValue);
 
+        const currentElId = currElParrent.dataset.id;
+        console.log(currentElId);
+
+        this.#workouts.forEach(workout => {
+          if (workout.id === currentElId) {
+          }
+        });
+
         console.log(this.#workouts);
         formEdit.remove();
 
@@ -440,6 +457,19 @@ class App {
     );
   }
 
+  _updateWorkoutArr(distance, duration, cadence, elevationGain) {
+    this.#workouts.duration = duration;
+    this.#workouts.cadence = cadence;
+    this.#workouts.distance = distance;
+
+    if (this.#workouts.type === 'running') {
+      this.#workouts.cadence = cadence;
+    }
+    if (this.#workouts.type === 'cycling') {
+      this.#workouts.elevationGain - elevationGain;
+    }
+  }
+
   _setLocalStorage() {
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
   }
@@ -447,9 +477,35 @@ class App {
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
 
+    console.log(data);
     if (!data) return;
 
-    this.#workouts = data;
+    // Restoring Object to running and cycling classes
+    const restoredArr = data.map(workout => {
+      if (workout.type === 'running') {
+        return new Running(
+          workout.coords,
+          workout.distance,
+          workout.duration,
+          workout.cadence,
+          new Date(workout.date),
+          workout.id
+        );
+      }
+      if (workout.type === 'cycling') {
+        return new Cycling(
+          workout.coords,
+          workout.distance,
+          workout.duration,
+          workout.elevationGain,
+          new Date(workout.date),
+          workout.id
+        );
+      }
+    });
+    console.log(data);
+    console.log(restoredArr);
+    this.#workouts = restoredArr;
   }
 
   reset() {
