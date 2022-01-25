@@ -40,7 +40,9 @@ a:visited {
   color: var(--color-brand--1);
 }
 
-button {
+button,
+button:link,
+button:visited {
   text-decoration: none;
   border: none;
   background: transparent;
@@ -71,8 +73,9 @@ button {
   opacity: 0;
 }
 
-.btn-reset:hover {
-  transform: scale(1.1) translateY(-0.4rem);
+.btn-reset:hover,
+.btn-reset:active {
+  transform: scale(1.1) translateY(-0.2rem);
   text-decoration: underline;
 }
 
@@ -110,6 +113,7 @@ button {
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0.75rem 1.5rem;
 }
+
 .workout--running {
   border-left: 5px solid var(--color-brand--2);
 }
@@ -233,6 +237,7 @@ button {
 .workout__value {
   font-size: 1.5rem;
   margin-right: 0.5rem;
+  position: relative;
 }
 
 .workout__unit {
@@ -302,6 +307,40 @@ button {
 
 .form__btn {
   display: none;
+}
+
+/* Form for UI edit */
+.form-edit {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  transition: all 250ms;
+  /* transform: translate(-100%, -100%); */
+}
+
+.form-edit::after {
+  content: '';
+  position: absolute;
+  bottom: 70%;
+  width: 1rem;
+  height: 1rem;
+  left: 50%;
+  background: #fff;
+  transform: translate(-50%, 50%) rotate(45deg);
+  /* z-index: -1; */
+}
+
+.form-edit__number {
+  width: 4rem;
+  position: relative;
+  z-index: 2;
+  border: none;
+  border-radius: 2px;
+}
+
+.form-edit__number:active,
+.form-edit__number:focus {
+  outline: 2px solid #00c46a;
 }
 
 .copyright {

@@ -96,8 +96,18 @@ class App {
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
+
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    // containerWorkouts.addEventListener(
+    //   'mouseover',
+    //   this._editWorkouts.bind(this)
+    // );
+
     containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
+    deleteAllWorkoutBtn.addEventListener('click', this.reset);
+
+    window.addEventListener('load', () => this._toggleRemoveAllBtn());
+    window.addEventListener('keydown', this._closeForm.bind(this));
   }
 
   _getPosition() {
@@ -146,11 +156,12 @@ class App {
   }
 
   _toggleRemoveAllBtn() {
-    if (this.#workouts === []) {
+    if (this.#workouts.length === 0) {
       console.log('💥 Hide remove all btn');
       deleteAllWorkoutBtn.classList.add('btn-reset--hidden');
     } else {
       console.log('✅ Show remove all btn');
+      console.log(this.#workouts);
       deleteAllWorkoutBtn.classList.remove('btn-reset--hidden');
     }
   }
@@ -166,6 +177,10 @@ class App {
     form.style.display = 'none';
     form.classList.add('hidden');
     setTimeout(() => (form.style.display = 'grid'), 1000);
+  }
+
+  _closeForm(e) {
+    if (e.key === 'Escape') this._hideForm();
   }
 
   _toggleElevationField() {
@@ -233,6 +248,10 @@ class App {
 
     // Show deleteAllBtn or not
     this._toggleRemoveAllBtn();
+
+    // Listening for Edit changes
+    const workoutContainer = document.querySelector('.workout');
+    workoutContainer.addEventListener('click', this._editWorkouts.bind(this));
 
     // Set local storage to all workouts
     this._setLocalStorage();
@@ -318,9 +337,9 @@ class App {
 
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
-    console.log(workoutEl);
 
-    if (!workoutEl) return;
+    if (workoutEl === null) return;
+    console.log(workoutEl);
 
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
@@ -378,6 +397,47 @@ class App {
 
     // Clearing local storage
     this.reset();
+  }
+
+  _editWorkouts(e) {
+    // console.log(e.target);
+    e.preventDefault();
+    const value = e.target.closest('.workout__value');
+    if (!value) return;
+
+    const html = `
+      <form class="form-edit">
+        <label></label>
+        <input type="text" class="form-edit__number" />
+      </form>
+    `;
+
+    // Guard clause the opposite if it is true then return
+    // Prevent inserting html
+    if (value.firstElementChild) return;
+
+    value.insertAdjacentHTML('afterbegin', html);
+
+    const formEdit = document.querySelector('.form-edit');
+    const userInputField = document.querySelector('.form-edit__number');
+
+    userInputField.focus();
+    console.log(this.#workouts);
+
+    formEdit.addEventListener(
+      'submit',
+      function (e) {
+        e.preventDefault();
+        const userInputValue = userInputField.value;
+        // console.log(userInputValue);
+
+        console.log(this.#workouts);
+        formEdit.remove();
+
+        if (userInputField.value === '') return;
+        value.textContent = userInputValue;
+      }.bind(this)
+    );
   }
 
   _setLocalStorage() {
