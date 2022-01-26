@@ -50,7 +50,7 @@ class Workout {
 
       this.city = geoData.city;
       this.country = geoData.country;
-      console.log(geoData.city, geoData.country);
+      // console.log(geoData.city, geoData.country);
     } catch (err) {
       console.error(err);
     }
@@ -314,9 +314,9 @@ class App {
 
     // console.log(workoutTest);
     workout._reverseGeoCode(workout.coords).then(() => {
-      const city = workout.city;
-      const country = workout.country;
-      console.log(city, country);
+      // const city = workout.city;
+      // const country = workout.country;
+      // console.log(city, country);
 
       L.marker(workout.coords)
         .addTo(this.#map)
@@ -329,95 +329,42 @@ class App {
             className: `${workout.type}-popup`,
           })
         )
-        // .setPopupContent(`${_checkLocationData(workout)}`)
-
-        // .setPopupContent(
-        //   `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'} ${workout.description}`
-        // )
-
-        // .setPopupContent(
-        //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
-        //     workout.city
-        //       ? `${workout.type} in ${workout.city}, ${workout.country}`
-        //       : workout.description
-        //   }`
-        // .setPopupContent(
-        //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
-        //     workout.type
-        //   } in ${city}, ${country}`
 
         .setPopupContent(
-          `${workout.type === 'running' ? '🏃' : '🚴'} ${
-            workout.city
-              ? `${workout.type[0].toUpperCase() + workout.type.slice(1)} in ${
-                  workout.city
-                }, ${workout.country}`
-              : workout.description
-          }`
+          `${workout.type === 'running' ? '🏃' : '🚴'} ${this._checkApiRequest(
+            workout
+          )}`
         )
         .openPopup();
     });
   }
-  // _renderWorkoutMarker(workout) {
-  //     L.marker(workout.coords)
-  //       .addTo(this.#map)
-  //       .bindPopup(
-  //         L.popup({
-  //           maxWidth: 250,
-  //           minWidth: 100,
-  //           autoClose: false,
-  //           closeOnClick: false,
-  //           className: `${workout.type}-popup`,
-  //         })
-  //       )
-  //       // .setPopupContent(`${_checkLocationData(workout)}`)
 
-  //       // .setPopupContent(
-  //       //   `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'} ${workout.description}`
-  //       // )
+  _checkApiRequest(workout) {
+    // If the api reqeust was succesfull we render country and city
+    // If not we render the default description
+    console.log(workout);
 
-  //       // .setPopupContent(
-  //       //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
-  //       //     workout.city
-  //       //       ? `${workout.type} in ${workout.city}, ${workout.country}`
-  //       //       : workout.description
-  //       //   }`
-  //       .setPopupContent(
-  //         `${workout.type === 'running' ? `🏃` : '🚴'} ${
-  //           workout.type
-  //         } in ${city}, ${country}`
-
-  //         // .setPopupContent(
-  //         //   `${workout.type === 'running' ? '🏃' : '🚴'} ${
-  //         //     workout.city
-  //         //       ? `${workout.type} in ${workout.city}, ${workout.country}`
-  //         //       : workout.description
-  //         //   }`
-  //       )
-  //       .openPopup();
-  //   }
-  // }
-
-  _checkLocationData(workout) {
     if (workout.type === 'running') {
       if (workout.city && workout.country) {
         return `Running in ${workout.city}, ${workout.country}`;
-      } else return `🏃 ${workout.description}`;
+      } else return `${workout.description}`;
     }
 
     if (workout.type === 'cycling') {
       if (workout.city && workout.country) {
         return `Cycling in ${workout.city}, ${workout.country}`;
-      } else return `🚴 ${workout.description}`;
+      } else return `${workout.description}`;
     }
   }
 
   _renderWorkout(workout) {
     console.log(workout);
+
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <div class=workout__heading-container>
-          <h2 class="workout__title">${workout.description}</h2>
+          <h2 class="workout__title">${this._checkApiRequest(workout)} 
+          </h2>
           <div class="workout__icon-delete">
           <span class="trash">
               <span></span>
