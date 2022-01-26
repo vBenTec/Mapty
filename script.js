@@ -36,6 +36,25 @@ class Workout {
   click() {
     this.clicks++;
   }
+
+  async _reverseGeoCode(coordsArr) {
+    try {
+      const [lat, lng] = coordsArr;
+      console.log(lat, lng);
+      const resData = await fetch(
+        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=210295472141395188486x78251`
+      );
+      if (!resData.ok) throw new Error('😟 Could not get location details');
+
+      const geoData = await resData.json();
+
+      this.city = geoData.city;
+      this.country = geoData.country;
+      console.log(geoData.city, geoData.country);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 class Running extends Workout {
@@ -61,6 +80,7 @@ class Cycling extends Workout {
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
+    // this._reverseGeoCode(coords);
   }
 
   calcSpeed() {
@@ -244,7 +264,11 @@ class App {
 
     // Add new object to workout array
     this.#workouts.push(workout);
-    console.log(workout);
+
+    // Reverse Geocoding
+    // this._reverseGeocode(workout);
+    // console.log(workout);
+
     // Render workout on map as marker
     this._renderWorkoutMarker(workout);
 
@@ -265,22 +289,127 @@ class App {
     this._setLocalStorage();
   }
 
+  // async _reverseGeocode(workout) {
+  //   try {
+  //     const [lat, lng] = workout.coords;
+  //     console.log(lat, lng);
+  //     const resData = await fetch(
+  //       `https://geocode.xyz/${lat},${lng}?geoit=json`
+  //     );
+  //     if (!resData.ok) throw new Error('😟 Could not get location details');
+
+  //     const geoData = await resData.json();
+
+  //     workout.city = geoData.city;
+  //     workout.country = geoData.country;
+  //     console.log(geoData.city, geoData.country);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }
+
   _renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
-      .addTo(this.#map)
-      .bindPopup(
-        L.popup({
-          maxWidth: 250,
-          minWidth: 100,
-          autoClose: false,
-          closeOnClick: false,
-          className: `${workout.type}-popup`,
-        })
-      )
-      .setPopupContent(
-        `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'} ${workout.description}`
-      )
-      .openPopup();
+    // console.log(workout);
+    // let workoutTest = workout;
+
+    // console.log(workoutTest);
+    workout._reverseGeoCode(workout.coords).then(() => {
+      const city = workout.city;
+      const country = workout.country;
+      console.log(city, country);
+
+      L.marker(workout.coords)
+        .addTo(this.#map)
+        .bindPopup(
+          L.popup({
+            maxWidth: 250,
+            minWidth: 100,
+            autoClose: false,
+            closeOnClick: false,
+            className: `${workout.type}-popup`,
+          })
+        )
+        // .setPopupContent(`${_checkLocationData(workout)}`)
+
+        // .setPopupContent(
+        //   `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'} ${workout.description}`
+        // )
+
+        // .setPopupContent(
+        //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
+        //     workout.city
+        //       ? `${workout.type} in ${workout.city}, ${workout.country}`
+        //       : workout.description
+        //   }`
+        // .setPopupContent(
+        //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
+        //     workout.type
+        //   } in ${city}, ${country}`
+
+        .setPopupContent(
+          `${workout.type === 'running' ? '🏃' : '🚴'} ${
+            workout.city
+              ? `${workout.type[0].toUpperCase() + workout.type.slice(1)} in ${
+                  workout.city
+                }, ${workout.country}`
+              : workout.description
+          }`
+        )
+        .openPopup();
+    });
+  }
+  // _renderWorkoutMarker(workout) {
+  //     L.marker(workout.coords)
+  //       .addTo(this.#map)
+  //       .bindPopup(
+  //         L.popup({
+  //           maxWidth: 250,
+  //           minWidth: 100,
+  //           autoClose: false,
+  //           closeOnClick: false,
+  //           className: `${workout.type}-popup`,
+  //         })
+  //       )
+  //       // .setPopupContent(`${_checkLocationData(workout)}`)
+
+  //       // .setPopupContent(
+  //       //   `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'} ${workout.description}`
+  //       // )
+
+  //       // .setPopupContent(
+  //       //   `${workout.type === 'running' ? `🏃` : '🚴'} ${
+  //       //     workout.city
+  //       //       ? `${workout.type} in ${workout.city}, ${workout.country}`
+  //       //       : workout.description
+  //       //   }`
+  //       .setPopupContent(
+  //         `${workout.type === 'running' ? `🏃` : '🚴'} ${
+  //           workout.type
+  //         } in ${city}, ${country}`
+
+  //         // .setPopupContent(
+  //         //   `${workout.type === 'running' ? '🏃' : '🚴'} ${
+  //         //     workout.city
+  //         //       ? `${workout.type} in ${workout.city}, ${workout.country}`
+  //         //       : workout.description
+  //         //   }`
+  //       )
+  //       .openPopup();
+  //   }
+  // }
+
+  _checkLocationData(workout) {
+    if (workout.type === 'running') {
+      if (workout.city && workout.country) {
+        return `Running in ${workout.city}, ${workout.country}`;
+      } else return `🏃 ${workout.description}`;
+    }
+
+    if (workout.type === 'cycling') {
+      if (workout.city && workout.country) {
+        return `Cycling in ${workout.city}, ${workout.country}`;
+      } else return `🚴 ${workout.description}`;
+    }
   }
 
   _renderWorkout(workout) {
