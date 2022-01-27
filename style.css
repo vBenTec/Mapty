@@ -345,6 +345,12 @@ button:visited {
   text-decoration: underline;
 }
 
+.workout__value--pace:hover,
+.workout__value--speed:hover {
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
 .form {
   background-color: var(--color-dark--2);
   border-radius: 5px;

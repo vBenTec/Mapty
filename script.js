@@ -50,7 +50,7 @@ class Workout {
 
       this.city = geoData.city;
       this.country = geoData.country;
-      // console.log(geoData.city, geoData.country);
+      console.log(geoData.city, geoData.country);
     } catch (err) {
       console.error(err);
     }
@@ -128,12 +128,32 @@ class App {
     inputType.addEventListener('change', this._toggleElevationField);
 
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+
     // containerWorkouts.addEventListener(
-    //   'mouseover',
-    //   this._editWorkouts.bind(this)
+    //   'click',
+    //   function () {
+    //     this._moveToPopup();
+    //     this._editWorkouts();
+    //     this._deleteWorkout();
+    //   }.bind(this)
     // );
 
-    containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
+    // containerWorkouts.addEventListener('click', this._editWorkouts.bind(this));
+    // containerWorkouts.onclick(this._editWorkouts.bind(this));
+
+    containerWorkouts.addEventListener(
+      'click',
+      function (e) {
+        console.log(this);
+        console.log(e);
+        if (!e) return;
+        this._editWorkouts(e);
+        this._deleteWorkout(e);
+      }.bind(this)
+    );
+
+    // containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
+
     deleteAllWorkoutBtn.addEventListener('click', this.reset);
     btnError.addEventListener('click', this._deleteError);
 
@@ -379,12 +399,16 @@ class App {
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'
           }</span>
-          <span class="workout__value">${workout.distance}</span>
+          <span class="workout__value" data-type="distance">${
+            workout.distance
+          }</span>
           <span class="workout__unit">km</span>
         </div>
         <div class="workout__details">
           <span class="workout__icon">⏱</span>
-          <span class="workout__value">${workout.duration}</span>
+          <span class="workout__value" data-type="duration">${
+            workout.duration
+          }</span>
           <span class="workout__unit">min</span>
         </div>
     `;
@@ -393,12 +417,16 @@ class App {
       html += `
           <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.pace.toFixed(1)}</span>
+          <span class="workout__value workout__value--pace" data-type="pace">${workout.pace.toFixed(
+            1
+          )}</span>
           <span class="workout__unit">min/km</span>
         </div>
         <div class="workout__details">
           <span class="workout__icon">🦶🏼</span>
-          <span class="workout__value">${workout.cadence}</span>
+          <span class="workout__value" data-type="cadence">${
+            workout.cadence
+          }</span>
           <span class="workout__unit">spm</span>
         </div>
       </li>
@@ -408,12 +436,16 @@ class App {
       html += `
         <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.speed.toFixed(1)}</span>
+          <span class="workout__value workout__value--speed" data-type="speed">${workout.speed.toFixed(
+            1
+          )}</span>
           <span class="workout__unit">km/h</span>
         </div>
         <div class="workout__details">
           <span class="workout__icon">⛰</span>
-          <span class="workout__value">${workout.elevationGain}</span>
+          <span class="workout__value" data-type="elevationGain">${
+            workout.elevationGain
+          }</span>
           <span class="workout__unit">m</span>
         </div>
       </li> 
@@ -487,11 +519,23 @@ class App {
   }
 
   _editWorkouts(e) {
-    // console.log(e.target);
+    console.log(e.target);
+
+    // Check target because of page reload and invoking from submit event
+    if (e.target.classList.contains('form__btn')) return;
     e.preventDefault();
     const currElParrent = e.target.closest('.workout');
-    const value = e.target.closest('.workout__value');
-    if (!value) return;
+    const valueEl = e.target.closest('.workout__value');
+
+    const valueElDataSet = valueEl?.dataset?.type;
+
+    let speedEl = document.querySelector('.workout__value--speed');
+    let paceEl = document.querySelector('.workout__value--pace');
+    console.log(currElParrent);
+
+    if (!valueEl || !currElParrent) return;
+    if (valueElDataSet === 'pace' || valueElDataSet === 'speed')
+      return alert('You can not edit this number');
 
     const html = `
       <form class="form-edit">
@@ -501,52 +545,92 @@ class App {
     `;
 
     // Guard clause the opposite if it is true then return
-    // Prevent inserting html
-    if (value.firstElementChild) return;
+    // Prevent inserting more html windows
+    if (valueEl.firstElementChild) return;
 
-    value.insertAdjacentHTML('afterbegin', html);
+    valueEl.insertAdjacentHTML('afterbegin', html);
 
     const formEdit = document.querySelector('.form-edit');
     const userInputField = document.querySelector('.form-edit__number');
 
     userInputField.focus();
+    console.log(currElParrent);
     console.log(this.#workouts);
+
+    // _updateWorkoutArr();
+    console.log(valueEl);
+    console.log(valueElDataSet);
 
     formEdit.addEventListener(
       'submit',
       function (e) {
         e.preventDefault();
         const userInputValue = userInputField.value;
-        // console.log(userInputValue);
+        console.log(userInputValue);
 
         const currentElId = currElParrent.dataset.id;
         console.log(currentElId);
 
-        this.#workouts.forEach(workout => {
-          if (workout.id === currentElId) {
-          }
-        });
+        // Updating workoutarry with
+        // 1) id of parrent element.
+        // 2) data type of input element.
+        // 3) Value that should  be updated
+        this._updateWorkoutArr(currentElId, valueElDataSet, userInputValue);
 
-        console.log(this.#workouts);
+        // console.log(this.#workouts);
         formEdit.remove();
 
         if (userInputField.value === '') return;
-        value.textContent = userInputValue;
+        valueEl.textContent = userInputValue;
+
+        console.log(speedEl);
+        // Updating the UI for calculations
+        if (speedEl !== null) {
+          const speedElData = speedEl.dataset.type;
+          this._updateCalcUi(currentElId, speedElData, speedEl);
+        }
+
+        console.log(paceEl);
+        if (paceEl !== null) {
+          const paceElData = paceEl.dataset.type;
+          this._updateCalcUi(currentElId, paceElData, paceEl);
+        }
+
+        // Update local storage
+        this._setLocalStorage();
       }.bind(this)
     );
   }
 
-  _updateWorkoutArr(distance, duration, cadence, elevationGain) {
-    this.#workouts.duration = duration;
-    this.#workouts.cadence = cadence;
-    this.#workouts.distance = distance;
+  _updateWorkoutArr(dataId, dataType, number) {
+    this.#workouts.forEach(workout => {
+      if (workout.id === dataId) {
+        if (dataType === 'duration') workout.duration = +number;
+        if (dataType === 'cadence') workout.cadence = +number;
+        if (dataType === 'distance') workout.distance = +number;
+        if (dataType === 'cadence') workout.cadence = +number;
+        if (dataType === 'elevationgain') workout.elevationGain = +number;
+      }
+    });
+  }
 
-    if (this.#workouts.type === 'running') {
-      this.#workouts.cadence = cadence;
-    }
-    if (this.#workouts.type === 'cycling') {
-      this.#workouts.elevationGain - elevationGain;
-    }
+  _updateCalcUi(dataId, dataType, el) {
+    console.log(dataType);
+    console.log(el);
+    this.#workouts.forEach(workout => {
+      if (workout.id === dataId) {
+        if (dataType === 'speed') {
+          if (!workout.calcSpeed) return;
+          workout.calcSpeed();
+          el.textContent = workout.speed.toFixed(1);
+        }
+        if (dataType === 'pace') {
+          if (!workout.calcPace) return;
+          workout.calcPace();
+          el.textContent = workout.pace.toFixed(1);
+        }
+      }
+    });
   }
 
   _setLocalStorage() {
@@ -582,6 +666,7 @@ class App {
         );
       }
     });
+
     console.log(data);
     console.log(restoredArr);
     this.#workouts = restoredArr;
