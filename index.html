@@ -33,6 +33,47 @@
     <title>mapty // Map your workouts</title>
   </head>
   <body>
+    <div class="modal-error__overlay modal-error__overlay--hidden">
+      <div class="modal-error__window">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="modal-error__icon-alarm"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <dl class="modal-error__heading">Error</dl>
+        <dt class="modal-error__description">Please, only input</dt>
+        <dd class="modal-error__description-inputs">
+          + positive number, or <br />
+          - negativ number for elevation gain
+        </dd>
+        <button class="btn modal-error__btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="modal-error__check-icon"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>Check</span>
+        </button>
+      </div>
+    </div>
     <div class="sidebar">
       <img src="./assets/logo.png" alt="Logo" class="logo" />
 

@@ -105,6 +105,8 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const deleteAllWorkoutBtn = document.querySelector('.btn-reset');
+const overlayError = document.querySelector('.modal-error__overlay');
+const btnError = document.querySelector('.modal-error__btn');
 
 class App {
   #map;
@@ -133,6 +135,7 @@ class App {
 
     containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
     deleteAllWorkoutBtn.addEventListener('click', this.reset);
+    btnError.addEventListener('click', this._deleteError);
 
     window.addEventListener('load', () => this._toggleRemoveAllBtn());
     window.addEventListener('keydown', this._closeForm.bind(this));
@@ -243,7 +246,7 @@ class App {
         !validInputs(distance, duration, cadence) ||
         !allPositive(distance, duration, cadence)
       )
-        return alert('Inputs have to be positive numbers!');
+        return this._renderError();
 
       workout = new Running([lat, lng], distance, duration, cadence);
     }
@@ -257,7 +260,7 @@ class App {
         !validInputs(distance, duration, elevation) ||
         !allPositive(distance, duration)
       )
-        return alert('Inputs have to be positive numbers!');
+        return this._renderError();
 
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
@@ -582,6 +585,14 @@ class App {
     console.log(data);
     console.log(restoredArr);
     this.#workouts = restoredArr;
+  }
+
+  _renderError() {
+    overlayError.classList.remove('modal-error__overlay--hidden');
+  }
+
+  _deleteError() {
+    overlayError.classList.add('modal-error__overlay--hidden');
   }
 
   reset() {
