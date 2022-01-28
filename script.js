@@ -6,6 +6,9 @@ class Workout {
   // date = new Date();
   // id = (Date.now() + '').slice(-10);
   clicks = 0;
+  #keyGeo = '210295472141395188486x78251';
+  #keyWeather = '4656959220d15c35908205b182a5d5a4';
+  #weather = {};
 
   constructor(
     coords,
@@ -37,12 +40,51 @@ class Workout {
     this.clicks++;
   }
 
+  // Set weather data from weather api
+  _setWeatherData(clouds, temp, humidity, windSpeed, weatherArray) {
+    // clouds %
+    this.#weather.clouds = `${clouds} %`;
+    console.log(clouds);
+
+    // weather icon url
+    this.#weather.iconUrl = `${this._getWeatherIconUrl(weatherArray)}`;
+    console.log(temp);
+
+    // wind m/s
+    this.#weather.windSpeed = `${windSpeed} m/s`;
+    console.log(humidity);
+
+    // humidity %
+    this.#weather.humidity = `${humidity} %`;
+    console.log(windSpeed);
+
+    // temperatur kelvin
+    this.#weather.temp = `${this._convertCelsius(temp)}°C `;
+    console.log(weatherArray);
+  }
+
+  // Pass in an array with an obj inside
+  _getWeatherIconUrl(weather) {
+    // Destructer array
+    const [weatherObj] = weather;
+    // Getting weather code for icon
+    const iconCode = weatherObj.icon;
+    // Getting URL
+    const iconSrc = `http://openweathermap.org/img/wn/${iconCode}`;
+    return iconSrc;
+  }
+
+  _convertCelsius(kelvin) {
+    const celsius = Math.round(Number(kelvin) - 273.15);
+    return celsius;
+  }
+
   async _reverseGeoCode(coordsArr) {
     try {
       const [lat, lng] = coordsArr;
       console.log(lat, lng);
       const resData = await fetch(
-        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=210295472141395188486x78251`
+        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=${this.#keyGeo}`
       );
       if (!resData.ok) throw new Error('😟 Could not get location details');
 
@@ -51,6 +93,34 @@ class Workout {
       this.city = geoData.city;
       this.country = geoData.country;
       console.log(geoData.city, geoData.country);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async _getWeatherData(lat, lng) {
+    try {
+      console.log(lat, lng);
+      const getRequest = await fetch(
+        `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&appid=${
+          this.#keyWeather
+        }`
+      );
+      if (!getRequest.ok)
+        throw new Error('😟 Something went wrong with the get request');
+
+      const dataWeather = await getRequest.json();
+
+      // if (!dataWeather.ok) return;
+      console.log(dataWeather);
+
+      this._setWeatherData(
+        dataWeather.current.clouds,
+        dataWeather.current.temp,
+        dataWeather.current.humidity,
+        dataWeather.current.wind_speed,
+        dataWeather.current.weather
+      );
     } catch (err) {
       console.error(err);
     }
@@ -147,8 +217,6 @@ class App {
     containerWorkouts.addEventListener(
       'click',
       function (e) {
-        console.log(this);
-        console.log(e);
         if (!e) return;
         this._editWorkouts(e);
         this._deleteWorkout(e);
@@ -292,6 +360,10 @@ class App {
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
 
+    // AJAX call to get weather data to the workout
+    console.log(workout);
+    this._setWeatherData(workout, lat, lng);
+
     // Add new object to workout array
     this.#workouts.push(workout);
 
@@ -319,24 +391,17 @@ class App {
     this._setLocalStorage();
   }
 
-  // async _reverseGeocode(workout) {
-  //   try {
-  //     const [lat, lng] = workout.coords;
-  //     console.log(lat, lng);
-  //     const resData = await fetch(
-  //       `https://geocode.xyz/${lat},${lng}?geoit=json`
-  //     );
-  //     if (!resData.ok) throw new Error('😟 Could not get location details');
-
-  //     const geoData = await resData.json();
-
-  //     workout.city = geoData.city;
-  //     workout.country = geoData.country;
-  //     console.log(geoData.city, geoData.country);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
+  async _setWeatherData(workout, lat, lng) {
+    try {
+      console.log(workout);
+      console.log(lat, lng);
+      const test = await workout._getWeatherData(lat, lng);
+      console.log(test);
+      return test;
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   _renderWorkoutMarker(workout) {
     // console.log(workout);
