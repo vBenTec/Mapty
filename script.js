@@ -415,7 +415,7 @@ class App {
 
       // Brand icon
       const maptyIcon = L.icon({
-        iconUrl: 'icon.png',
+        iconUrl: './assets/icon.png',
         iconSize: [50, 55],
         iconAnchor: [24, 3],
       });
