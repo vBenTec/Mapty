@@ -105,6 +105,7 @@ button:visited {
 .modal-error__description-inputs {
   font-size: 1.8rem;
   margin-bottom: 2rem;
+  font-weight: 600;
 }
 
 .modal-error__btn {
@@ -153,24 +154,41 @@ button:visited {
   position: relative;
 }
 
-.btn-reset {
+.btns-menu {
   display: flex;
-  align-items: center;
-  position: absolute;
-  top: 9rem;
-  transition: transform 250ms;
+  margin-bottom: 2rem;
 }
 
-.btn-reset--hidden {
+.btns-menu--hidden {
   visibility: hidden;
   height: 0;
   opacity: 0;
 }
 
+.btn-reset,
+.btn-overview {
+  display: flex;
+  align-items: flex-end;
+  /* position: absolute; */
+  /* top: 9rem; */
+  transition: transform 250ms;
+}
+
+.btn-overview:hover,
+.btn-overview:active,
 .btn-reset:hover,
 .btn-reset:active {
   transform: scale(1.1) translateY(-0.2rem);
   text-decoration: underline;
+}
+
+.btn-overview {
+  margin-left: auto;
+  transition: transform 250ms;
+}
+
+.btn-overview__icon {
+  height: 1.8rem;
 }
 
 .logo {

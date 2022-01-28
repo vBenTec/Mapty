@@ -104,15 +104,18 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const btnsMenu = document.querySelector('.btns-menu');
 const deleteAllWorkoutBtn = document.querySelector('.btn-reset');
 const overlayError = document.querySelector('.modal-error__overlay');
 const btnError = document.querySelector('.modal-error__btn');
+const btnOverview = document.querySelector('.btn-overview');
 
 class App {
   #map;
   #mapEvent;
   #workouts = [];
   #mapZoomLevel = 13;
+  #markers = [];
 
   constructor() {
     // this.workouts = [];
@@ -151,6 +154,8 @@ class App {
         this._deleteWorkout(e);
       }.bind(this)
     );
+
+    btnOverview.addEventListener('click', this._showOverview.bind(this));
 
     // containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
 
@@ -207,13 +212,15 @@ class App {
   }
 
   _toggleRemoveAllBtn() {
+    // If workouts array is empty add hidden class
     if (this.#workouts.length === 0) {
       console.log('💥 Hide remove all btn');
-      deleteAllWorkoutBtn.classList.add('btn-reset--hidden');
+      btnsMenu.classList.add('btns-menu--hidden');
+      // If workouts array has entries remove hidden class
     } else {
       console.log('✅ Show remove all btn');
       console.log(this.#workouts);
-      deleteAllWorkoutBtn.classList.remove('btn-reset--hidden');
+      btnsMenu.classList.remove('btns-menu--hidden');
     }
   }
 
@@ -341,7 +348,15 @@ class App {
       // const country = workout.country;
       // console.log(city, country);
 
-      L.marker(workout.coords)
+      // Brand icon
+      const maptyIcon = L.icon({
+        iconUrl: 'icon.png',
+        iconSize: [50, 55],
+        iconAnchor: [24, 3],
+      });
+
+      // Create a marker
+      const layer = L.marker(workout.coords, { icon: maptyIcon })
         .addTo(this.#map)
         .bindPopup(
           L.popup({
@@ -359,20 +374,25 @@ class App {
           )}`
         )
         .openPopup();
+
+      // push the marker inside of markers array
+      this.#markers.push(layer);
     });
   }
 
   _checkApiRequest(workout) {
-    // If the api reqeust was succesfull we render country and city
-    // If not we render the default description
+    // If the api reqeust was succesfull render country and city
+    // If not render the default description
     console.log(workout);
 
+    // Check for the workout types to get right description
     if (workout.type === 'running') {
       if (workout.city && workout.country) {
         return `Running in ${workout.city}, ${workout.country}`;
       } else return `${workout.description}`;
     }
 
+    // Check for the workout types to get right description
     if (workout.type === 'cycling') {
       if (workout.city && workout.country) {
         return `Cycling in ${workout.city}, ${workout.country}`;
@@ -417,7 +437,7 @@ class App {
       html += `
           <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value workout__value--pace" data-type="pace">${workout.pace.toFixed(
+          <span class="workout__value workout__value--pace" id="value-pace" data-type="pace">${workout.pace.toFixed(
             1
           )}</span>
           <span class="workout__unit">min/km</span>
@@ -436,7 +456,7 @@ class App {
       html += `
         <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value workout__value--speed" data-type="speed">${workout.speed.toFixed(
+          <span class="workout__value workout__value--speed" id="value-speed" data-type="speed">${workout.speed.toFixed(
             1
           )}</span>
           <span class="workout__unit">km/h</span>
@@ -488,8 +508,12 @@ class App {
 
     setTimeout(() => workoutEl.remove(), 250);
 
-    const updatedWorkouts = this.#workouts.filter(workout => {
+    // Get the index in the workout array for the markers array
+    let index;
+    const updatedWorkouts = this.#workouts.filter((workout, i) => {
       console.log(workout.id, workoutEl.dataset.id);
+      console.log(i);
+      index = i;
       return workout.id !== workoutEl.dataset.id;
     });
 
@@ -505,7 +529,12 @@ class App {
     this._setLocalStorage();
 
     // Delete marker on map
-    location.reload();
+    this.#markers[index].remove();
+
+    // Remove marker from array
+    this.#markers.splice(index);
+    console.log(this.#markers);
+    // location.reload();
   }
 
   _removeAllWorkouts() {
@@ -529,9 +558,18 @@ class App {
 
     const valueElDataSet = valueEl?.dataset?.type;
 
-    let speedEl = document.querySelector('.workout__value--speed');
-    let paceEl = document.querySelector('.workout__value--pace');
-    console.log(currElParrent);
+    const speedEl = document.querySelector('.workout__value--speed');
+    const paceEl = document.querySelector('.workout__value--pace');
+
+    // let speedEl;
+    // if (currElParrent.classList.contains('workout--running')) {
+    //   speedEl = document.querySelector('.workout__value--speed');
+    // }
+
+    // let paceEl;
+    // if (currElParrent.classList.contains('workout--cycling')) {
+    //   paceEl = document.querySelector('.workout__value--pace');
+    // }
 
     if (!valueEl || !currElParrent) return;
     if (valueElDataSet === 'pace' || valueElDataSet === 'speed')
@@ -588,12 +626,18 @@ class App {
         if (speedEl !== null) {
           const speedElData = speedEl.dataset.type;
           this._updateCalcUi(currentElId, speedElData, speedEl);
+          console.log(currentElId);
+          console.log(speedElData);
+          console.log(speedEl);
         }
 
         console.log(paceEl);
         if (paceEl !== null) {
           const paceElData = paceEl.dataset.type;
           this._updateCalcUi(currentElId, paceElData, paceEl);
+          console.log(currentElId);
+          console.log(paceElData);
+          console.log(paceEl);
         }
 
         // Update local storage
@@ -678,6 +722,31 @@ class App {
 
   _deleteError() {
     overlayError.classList.add('modal-error__overlay--hidden');
+  }
+
+  _showOverview() {
+    // if there are no workouts return
+    if (this.#workouts.length === 0) return;
+
+    // look for lowest and highest lat and long to make map bounds that fit all markers
+    const latitudes = this.#workouts.map(workouts => {
+      return workouts.coords[0];
+    });
+    const longitudes = this.#workouts.map(workouts => {
+      return workouts.coords[1];
+    });
+    const minLat = Math.min(...latitudes);
+    const maxLat = Math.max(...latitudes);
+    const minLong = Math.min(...longitudes);
+    const maxLong = Math.max(...longitudes);
+    // adjust fit bounds with coordinates
+    this.#map.fitBounds(
+      [
+        [maxLat, minLong],
+        [minLat, maxLong],
+      ],
+      { padding: [60, 60] }
+    );
   }
 
   reset() {
