@@ -8,7 +8,7 @@ class Workout {
   clicks = 0;
   #keyGeo = '210295472141395188486x78251';
   #keyWeather = '4656959220d15c35908205b182a5d5a4';
-  #weather = {};
+  _weather = {};
 
   constructor(
     coords,
@@ -43,23 +43,23 @@ class Workout {
   // Set weather data from weather api
   _setWeatherData(clouds, temp, humidity, windSpeed, weatherArray) {
     // clouds %
-    this.#weather.clouds = `${clouds} %`;
+    this._weather.clouds = clouds;
     console.log(clouds);
 
     // weather icon url
-    this.#weather.iconUrl = `${this._getWeatherIconUrl(weatherArray)}`;
+    this._weather.iconUrl = this._getWeatherIconUrl(weatherArray);
     console.log(temp);
 
     // wind m/s
-    this.#weather.windSpeed = `${windSpeed} m/s`;
+    this._weather.windSpeed = windSpeed;
     console.log(humidity);
 
     // humidity %
-    this.#weather.humidity = `${humidity} %`;
+    this._weather.humidity = humidity;
     console.log(windSpeed);
 
     // temperatur kelvin
-    this.#weather.temp = `${this._convertCelsius(temp)}°C `;
+    this._weather.temp = this._convertCelsius(temp);
     console.log(weatherArray);
   }
 
@@ -70,7 +70,7 @@ class Workout {
     // Getting weather code for icon
     const iconCode = weatherObj.icon;
     // Getting URL
-    const iconSrc = `http://openweathermap.org/img/wn/${iconCode}`;
+    const iconSrc = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
     return iconSrc;
   }
 
@@ -360,18 +360,18 @@ class App {
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
 
+    this._initWorkoutFunctions(workout, lat, lng);
+  }
+
+  async _initWorkoutFunctions(workout, lat, lng) {
     // AJAX call to get weather data to the workout
-    console.log(workout);
-    this._setWeatherData(workout, lat, lng);
+    await this._setWeatherData(workout, lat, lng);
 
     // Add new object to workout array
     this.#workouts.push(workout);
 
-    // Reverse Geocoding
-    // this._reverseGeocode(workout);
-    // console.log(workout);
-
     // Render workout on map as marker
+    console.log(workout);
     this._renderWorkoutMarker(workout);
 
     // Render workout on list
@@ -448,7 +448,7 @@ class App {
   _checkApiRequest(workout) {
     // If the api reqeust was succesfull render country and city
     // If not render the default description
-    console.log(workout);
+    // console.log(workout);
 
     // Check for the workout types to get right description
     if (workout.type === 'running') {
@@ -480,6 +480,32 @@ class App {
             </span>
         </div>
         </div>
+
+        <div class="workout__weather">
+          <span class="weather__value">🌡 ${workout._weather.temp}</span>
+          <span class="weather__unit">°C</span>
+          
+        </div>
+
+        <div class="workout__weather workout__weather--icon-container">
+        <img src="${
+          workout._weather.iconUrl
+        }" alt="weather-status-icon" class="weather__icon" />  
+        <span class="weather__value">${workout._weather.clouds}</span>
+        <span class="weather__unit">%</span>
+        </div>
+
+        <div class="workout__weather">
+          <span class="weather__value">💨 ${workout._weather.windSpeed}</span>
+          <span class="weather__unit">m/s</span>
+        </div>
+
+        <div class="workout__weather">
+          <span class="weather__value">💦  ${workout._weather.humidity}</span>
+          <span class="weather__unit">%</span>
+        </div>
+
+
         <div class="workout__details">
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'

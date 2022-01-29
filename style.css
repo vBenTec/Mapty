@@ -335,24 +335,34 @@ button:visited {
   fill: var(--color-dark--1);
 }
 
-.workout__details {
+.workout__details,
+.workout__weather {
   display: flex;
   align-items: baseline;
 }
 
-.workout__icon {
+.workout__icon,
+.weather__icon {
   font-size: 1.8rem;
   margin-right: 0.2rem;
   height: 0.28rem;
 }
 
-.workout__value {
+.weather__icon {
+  height: 3rem;
+  align-self: center;
+  transform: translateY(-0.3rem);
+}
+
+.workout__value,
+.weather__value {
   font-size: 1.5rem;
   margin-right: 0.5rem;
   position: relative;
 }
 
-.workout__unit {
+.workout__unit,
+.weather__unit {
   font-size: 1.1rem;
   color: var(--color-light--1);
   text-transform: uppercase;
