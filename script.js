@@ -8,14 +8,15 @@ class Workout {
   clicks = 0;
   #keyGeo = '210295472141395188486x78251';
   #keyWeather = '4656959220d15c35908205b182a5d5a4';
-  _weather = {};
+  // _weather = {};
 
   constructor(
     coords,
     distance,
     duration,
     date = new Date(),
-    id = (Date.now() + '').slice(-10)
+    id = (Date.now() + '').slice(-10),
+    _weather = {}
   ) {
     // this.date = ...
     // this.id = ....
@@ -24,6 +25,7 @@ class Workout {
     this.duration = duration; // in min
     this.date = date;
     this.id = id;
+    this._weather = _weather;
   }
 
   _setDescription() {
@@ -129,8 +131,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence, date, id) {
-    super(coords, distance, duration, date, id);
+  constructor(coords, distance, duration, cadence, date, id, _weather) {
+    super(coords, distance, duration, date, id, _weather);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -145,8 +147,8 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elevationGain, date, id) {
-    super(coords, distance, duration, date, id);
+  constructor(coords, distance, duration, elevationGain, date, id, _weather) {
+    super(coords, distance, duration, date, id, _weather);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -490,7 +492,11 @@ class App {
         <div class="workout__weather workout__weather--icon-container">
         <img src="${
           workout._weather.iconUrl
-        }" alt="weather-status-icon" class="weather__icon" />  
+        }" alt="weather-status-icon" class="weather__icon ${
+      this._checkWeatherIconBk(workout._weather.iconUrl)
+        ? 'weather__icon--bk-change'
+        : ''
+    }" />  
         <span class="weather__value">${workout._weather.clouds}</span>
         <span class="weather__unit">%</span>
         </div>
@@ -768,6 +774,13 @@ class App {
     });
   }
 
+  // Check if the icon of the api contains an icon with same color as background
+  _checkWeatherIconBk(stringUrl) {
+    return stringUrl === 'http://openweathermap.org/img/wn/50d@2x.png'
+      ? true
+      : false;
+  }
+
   _setLocalStorage() {
     localStorage.setItem('workouts', JSON.stringify(this.#workouts));
   }
@@ -781,23 +794,27 @@ class App {
     // Restoring Object to running and cycling classes
     const restoredArr = data.map(workout => {
       if (workout.type === 'running') {
+        console.log(workout._weather);
         return new Running(
           workout.coords,
           workout.distance,
           workout.duration,
           workout.cadence,
           new Date(workout.date),
-          workout.id
+          workout.id,
+          workout._weather
         );
       }
       if (workout.type === 'cycling') {
+        console.log(workout._weather);
         return new Cycling(
           workout.coords,
           workout.distance,
           workout.duration,
           workout.elevationGain,
           new Date(workout.date),
-          workout.id
+          workout.id,
+          workout._weather
         );
       }
     });
