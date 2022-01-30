@@ -86,7 +86,8 @@ class Workout {
       const [lat, lng] = coordsArr;
       console.log(lat, lng);
       const resData = await fetch(
-        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=${this.#keyGeo}`
+        `https://geocode.xyz/${lat},${lng}?geoit=json`
+        // `https://geocode.xyz/${lat},${lng}?geoit=json&auth=${this.#keyGeo}`
       );
       if (!resData.ok) throw new Error('😟 Could not get location details');
 
@@ -316,11 +317,19 @@ class App {
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
-  _newWorkout(e) {
-    const validInputs = (...inputs) =>
-      inputs.every(inp => Number.isFinite(inp));
+  _validInputs(...inputs) {
+    return inputs.every(inp => Number.isFinite(inp));
+  }
 
-    const allPositive = (...inputs) => inputs.every(inp => inp > 0);
+  _allPositive(...inputs) {
+    return inputs.every(inp => inp > 0);
+  }
+
+  _newWorkout(e) {
+    // const validInputs = (...inputs) =>
+    //   inputs.every(inp => Number.isFinite(inp));
+
+    // const allPositive = (...inputs) => inputs.every(inp => inp > 0);
 
     e.preventDefault();
 
@@ -340,8 +349,8 @@ class App {
         // !Number.isFinite(distance) ||
         // !Number.isFinite(duration) ||
         // !Number.isFinite(cadence)
-        !validInputs(distance, duration, cadence) ||
-        !allPositive(distance, duration, cadence)
+        !this._validInputs(distance, duration, cadence) ||
+        !this._allPositive(distance, duration, cadence)
       )
         return this._renderError();
 
@@ -354,8 +363,8 @@ class App {
 
       // Check if data is valid
       if (
-        !validInputs(distance, duration, elevation) ||
-        !allPositive(distance, duration)
+        !this._validInputs(distance, duration, elevation) ||
+        !this._allPositive(distance, duration)
       )
         return this._renderError();
 
@@ -436,9 +445,9 @@ class App {
         )
 
         .setPopupContent(
-          `${workout.type === 'running' ? '🏃' : '🚴'} ${this._checkApiRequest(
-            workout
-          )}`
+          `${
+            workout.type === 'running' ? '🏃' : '🚴'
+          } ${this._checkGeoApiRequest(workout)}`
         )
         .openPopup();
 
@@ -447,7 +456,7 @@ class App {
     });
   }
 
-  _checkApiRequest(workout) {
+  _checkGeoApiRequest(workout) {
     // If the api reqeust was succesfull render country and city
     // If not render the default description
     // console.log(workout);
@@ -473,7 +482,7 @@ class App {
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <div class=workout__heading-container>
-          <h2 class="workout__title">${this._checkApiRequest(workout)} 
+          <h2 class="workout__title">${this._checkGeoApiRequest(workout)} 
           </h2>
           <div class="workout__icon-delete">
           <span class="trash">
@@ -645,8 +654,6 @@ class App {
   }
 
   _editWorkouts(e) {
-    console.log(e.target);
-
     // Check target because of page reload and invoking from submit event
     if (e.target.classList.contains('form__btn')) return;
     e.preventDefault();
@@ -655,19 +662,18 @@ class App {
 
     const valueElDataSet = valueEl?.dataset?.type;
 
-    const speedEl = document.querySelector('.workout__value--speed');
-    const paceEl = document.querySelector('.workout__value--pace');
+    // let dynamicValue;
+    // currElParrent.classList.contains('workout--running')
+    //   ? (dynamicValue = currElParrent.querySelector('#value-pace'))
+    //   : (dynamicValue = currElParrent.querySelector('#value-speed'));
 
-    // let speedEl;
-    // if (currElParrent.classList.contains('workout--running')) {
-    //   speedEl = document.querySelector('.workout__value--speed');
-    // }
+    // console.log(dynamicValue);
 
-    // let paceEl;
-    // if (currElParrent.classList.contains('workout--cycling')) {
-    //   paceEl = document.querySelector('.workout__value--pace');
-    // }
+    // One of the element will always be null
+    const speedEl = currElParrent?.querySelector('#value-pace');
+    const paceEl = currElParrent?.querySelector('#value-speed');
 
+    // Guard clause to prevent null
     if (!valueEl || !currElParrent) return;
     if (valueElDataSet === 'pace' || valueElDataSet === 'speed')
       return alert('You can not edit this number');
@@ -705,6 +711,15 @@ class App {
 
         const currentElId = currElParrent.dataset.id;
         console.log(currentElId);
+
+        if (
+          // !Number.isFinite(distance) ||
+          // !Number.isFinite(duration) ||
+          // !Number.isFinite(cadence)
+          !this._validInputs(+userInputValue) ||
+          !this._allPositive(+userInputValue)
+        )
+          return this._renderError();
 
         // Updating workoutarry with
         // 1) id of parrent element.
@@ -864,3 +879,76 @@ class App {
 }
 
 const app = new App();
+
+// _sortAndRender(e){
+//   const element = e.target.closest('.sort__button');
+//   let currentDirection = 'descending'; //default
+//   if (!element) return;
+//   const arrow = element.querySelector('.arrow');
+//   const type = element.dataset.type;
+
+//   // set all arrows to default state (down)
+//   sortContainer.querySelectorAll('.arrow').forEach(e=> e.classList.remove('arrow__up'));
+
+//   // get which direction to sort
+//   const typeValues = this.#workouts.map(workout => {return workout[type]})
+//   const sortedAscending = typeValues.slice().sort(function(a, b){return a-b}).join('');
+//   const sortedDescending = typeValues.slice().sort(function(a, b){return b-a}).join('');
+
+//   // compare sortedAscending array with values from #workout array to check how are they sorted
+//   // 1. case 1 ascending
+//   if (typeValues.join('') === sortedAscending) {
+//       currentDirection = 'ascending'
+
+//       arrow.classList.add('arrow__up')
+
+//   }
+//   // 2. case 2 descending
+//   if (typeValues.join('') === sortedDescending) {
+//       currentDirection = 'descending'
+
+//       arrow.classList.remove('arrow__up')
+
+//   }
+
+//   // sort main workouts array
+//   this._sortArray(this.#workouts, currentDirection, type);
+
+//   ///////// RE-RENDER ////////
+//   // clear rendered workouts from DOM
+//   containerWorkouts.querySelectorAll('.workout').forEach(workout => workout.remove());
+//   // clear workouts from map(to prevent bug in array order when deleting a single workout)
+//   this.#markers.forEach(marker=> marker.remove());
+//   //clear array
+//   this.#markers = [];
+//   // render list all again sorted
+//   this.#workouts.forEach(workout => {
+//       this._renderWorkout(workout);
+//       // create new markers and render them on map
+//       this._renderWorkoutMarker(workout);
+//   });
+//   // center map on the last item in array (this will be 1st workout on the list in the UI)
+//  const lastWorkout = this.#workouts[this.#workouts.length - 1];
+//  this._setIntoView(lastWorkout);
+
+// }
+// _sortArray(array,currentDirection,type){
+
+//   // sort opposite to the currentDirection
+//   if (currentDirection === 'ascending') {
+//       array.sort(function(a, b){return b[type]-a[type]});
+
+//   };
+//   if (currentDirection === 'descending') {
+//       array.sort(function(a, b){return a[type]-b[type]});
+
+//   };
+
+// };
+
+// _toggleSortBtns(){
+//   sortContainer.classList.toggle('zero__height');
+// };
+// _showDeleteMsg(){
+//   confMsg.classList.remove('msg__hidden');
+// };
