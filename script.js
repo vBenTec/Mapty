@@ -23,8 +23,8 @@ class Workout {
     this.coords = coords; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
-    this.date = date;
-    this.id = id;
+    this._date = date;
+    this._id = id;
     this._weather = _weather;
   }
 
@@ -33,8 +33,8 @@ class Workout {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
-      months[this.date.getMonth()]
-    } ${this.date.getDate()}
+      months[this._date.getMonth()]
+    } ${this._date.getDate()}
     `;
   }
 
@@ -132,8 +132,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence, date, id, _weather) {
-    super(coords, distance, duration, date, id, _weather);
+  constructor(coords, distance, duration, cadence, _date, _id, _weather) {
+    super(coords, distance, duration, _date, _id, _weather);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -148,8 +148,8 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elevationGain, date, id, _weather) {
-    super(coords, distance, duration, date, id, _weather);
+  constructor(coords, distance, duration, elevationGain, _date, _id, _weather) {
+    super(coords, distance, duration, _date, _id, _weather);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -758,6 +758,92 @@ class App {
     );
   }
 
+  _sortAndRender(e) {
+    const element = e.target.closest('.sort__button');
+    let currentDirection = 'descending'; //default
+    if (!element) return;
+    const arrow = element.querySelector('.arrow');
+    const type = element.dataset.type;
+
+    // set all arrows to default state (down)
+    sortContainer
+      .querySelectorAll('.arrow')
+      .forEach(e => e.classList.remove('arrow__up'));
+
+    // get which direction to sort
+    const typeValues = this.#workouts.map(workout => {
+      return workout[type];
+    });
+    const sortedAscending = typeValues
+      .slice()
+      .sort(function (a, b) {
+        return a - b;
+      })
+      .join('');
+    const sortedDescending = typeValues
+      .slice()
+      .sort(function (a, b) {
+        return b - a;
+      })
+      .join('');
+
+    // compare sortedAscending array with values from #workout array to check how are they sorted
+    // 1. case 1 ascending
+    if (typeValues.join('') === sortedAscending) {
+      currentDirection = 'ascending';
+
+      arrow.classList.add('arrow__up');
+    }
+    // 2. case 2 descending
+    if (typeValues.join('') === sortedDescending) {
+      currentDirection = 'descending';
+
+      arrow.classList.remove('arrow__up');
+    }
+
+    // sort main workouts array
+    this._sortArray(this.#workouts, currentDirection, type);
+
+    ///////// RE-RENDER ////////
+    // clear rendered workouts from DOM
+    containerWorkouts
+      .querySelectorAll('.workout')
+      .forEach(workout => workout.remove());
+    // clear workouts from map(to prevent bug in array order when deleting a single workout)
+    this.#markers.forEach(marker => marker.remove());
+    //clear array
+    this.#markers = [];
+    // render list all again sorted
+    this.#workouts.forEach(workout => {
+      this._renderWorkout(workout);
+      // create new markers and render them on map
+      this._renderWorkoutMarker(workout);
+    });
+    // center map on the last item in array (this will be 1st workout on the list in the UI)
+    const lastWorkout = this.#workouts[this.#workouts.length - 1];
+    this._setIntoView(lastWorkout);
+  }
+  _sortArray(array, currentDirection, type) {
+    // sort opposite to the currentDirection
+    if (currentDirection === 'ascending') {
+      array.sort(function (a, b) {
+        return b[type] - a[type];
+      });
+    }
+    if (currentDirection === 'descending') {
+      array.sort(function (a, b) {
+        return a[type] - b[type];
+      });
+    }
+  }
+
+  _toggleSortBtns() {
+    sortContainer.classList.toggle('zero__height');
+  }
+  _showDeleteMsg() {
+    confMsg.classList.remove('msg__hidden');
+  }
+
   _updateWorkoutArr(dataId, dataType, number) {
     this.#workouts.forEach(workout => {
       if (workout.id === dataId) {
@@ -815,8 +901,8 @@ class App {
           workout.distance,
           workout.duration,
           workout.cadence,
-          new Date(workout.date),
-          workout.id,
+          new Date(workout._date),
+          workout._id,
           workout._weather
         );
       }
@@ -827,8 +913,8 @@ class App {
           workout.distance,
           workout.duration,
           workout.elevationGain,
-          new Date(workout.date),
-          workout.id,
+          new Date(workout._date),
+          workout._id,
           workout._weather
         );
       }
