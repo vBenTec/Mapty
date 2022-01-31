@@ -169,6 +169,7 @@ button:visited {
   position: relative;
 }
 
+/* BUTTONS */
 .btns-menu {
   display: flex;
   justify-content: space-between;
@@ -235,6 +236,25 @@ button:visited {
   bottom: 0;
 }
 
+/* Sort bar */
+.sort-bar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--color-light--1);
+  border-radius: 5px;
+  transition: all 1s ease-out;
+  opacity: 1;
+  height: 5rem;
+  overflow: hidden;
+}
+
+.sort-bar--hidden {
+  height: 0;
+}
+
+/* Workouts */
 .logo {
   height: 5.2rem;
   align-self: center;

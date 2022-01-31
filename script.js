@@ -182,6 +182,8 @@ const deleteAllWorkoutBtn = document.querySelector('.btn-reset');
 const overlayError = document.querySelector('.modal-error__overlay');
 const btnError = document.querySelector('.modal-error__btn');
 const btnOverview = document.querySelector('.btn-overview');
+const btnSort = document.querySelector('.btn-sort');
+const sortBar = document.querySelector('.sort-bar');
 
 class App {
   #map;
@@ -202,6 +204,8 @@ class App {
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
+
+    btnSort.addEventListener('click', this._toggleSortBtn);
 
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
 
@@ -480,7 +484,7 @@ class App {
     console.log(workout);
 
     let html = `
-      <li class="workout workout--${workout.type}" data-id="${workout.id}">
+      <li class="workout workout--${workout.type}" data-id="${workout._id}">
         <div class=workout__heading-container>
           <h2 class="workout__title">${this._checkGeoApiRequest(workout)} 
           </h2>
@@ -584,12 +588,12 @@ class App {
     const workoutEl = e.target.closest('.workout');
 
     if (workoutEl === null) return;
-    // console.log(workoutEl);
+    console.log(workoutEl);
 
     const workout = this.#workouts.find(
-      work => work.id === workoutEl.dataset.id
+      work => work._id === workoutEl.dataset.id
     );
-    // console.log(workout);
+    console.log(workout);
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
@@ -620,15 +624,15 @@ class App {
       console.log(workout.id, workoutEl.dataset.id);
       console.log(i);
       index = i;
-      return workout.id !== workoutEl.dataset.id;
+      return workout._id !== workoutEl.dataset.id;
     });
 
     this.#workouts = updatedWorkouts;
 
-    console.log(updatedWorkouts);
-    console.log(this.#workouts);
-    console.log(workoutEl);
-    console.log(deleteIcon);
+    // console.log(updatedWorkouts);
+    // console.log(this.#workouts);
+    // console.log(workoutEl);
+    // console.log(deleteIcon);
 
     // Delete workout from Local Storage
     localStorage.removeItem('workouts');
@@ -823,6 +827,11 @@ class App {
     const lastWorkout = this.#workouts[this.#workouts.length - 1];
     this._setIntoView(lastWorkout);
   }
+
+  _toggleSortBtn(e) {
+    sortBar.classList.toggle('sort-bar--hidden');
+  }
+
   _sortArray(array, currentDirection, type) {
     // sort opposite to the currentDirection
     if (currentDirection === 'ascending') {
@@ -837,9 +846,6 @@ class App {
     }
   }
 
-  _toggleSortBtns() {
-    sortContainer.classList.toggle('zero__height');
-  }
   _showDeleteMsg() {
     confMsg.classList.remove('msg__hidden');
   }
