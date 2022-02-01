@@ -852,7 +852,7 @@ class App {
 
   _updateWorkoutArr(dataId, dataType, number) {
     this.#workouts.forEach(workout => {
-      if (workout.id === dataId) {
+      if (workout._id === dataId) {
         if (dataType === 'duration') workout.duration = +number;
         if (dataType === 'cadence') workout.cadence = +number;
         if (dataType === 'distance') workout.distance = +number;
@@ -866,7 +866,7 @@ class App {
     console.log(dataType);
     console.log(el);
     this.#workouts.forEach(workout => {
-      if (workout.id === dataId) {
+      if (workout._id === dataId) {
         if (dataType === 'speed') {
           if (!workout.calcSpeed) return;
           workout.calcSpeed();
