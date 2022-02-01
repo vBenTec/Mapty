@@ -1,13 +1,13 @@
 'strict';
-
+import { config } from './config.js';
 // const { number } = require('assert-plus');
 
 class Workout {
   // date = new Date();
   // id = (Date.now() + '').slice(-10);
   clicks = 0;
-  #keyGeo = '210295472141395188486x78251';
-  #keyWeather = '4656959220d15c35908205b182a5d5a4';
+  #keyGeo = config.apiKeyGeo;
+  #keyWeather = config.apiKeyWeather;
   // _weather = {};
 
   constructor(
@@ -23,18 +23,21 @@ class Workout {
     this.coords = coords; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
-    this._date = date;
-    this._id = id;
-    this._weather = _weather;
+    this._date = date; // Only relevant for application logic
+    this._id = id; // Only relevant for application logic
+    this._weather = _weather; // Only relevant for application logic
   }
 
   _setDescription() {
     // prettier-ignore
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
+    this.description = `
+     ${this.type[0].toUpperCase()}${this.type.slice(
+      1
+    )} on ${this._date.getDate()} ${
       months[this._date.getMonth()]
-    } ${this._date.getDate()}
+    } , ${this._date.getFullYear()}
     `;
   }
 
@@ -65,7 +68,7 @@ class Workout {
     console.log(weatherArray);
   }
 
-  // Pass in an array with an obj inside
+  // Pass in an array with an object inside
   _getWeatherIconUrl(weather) {
     // Destructer array
     const [weatherObj] = weather;
@@ -76,11 +79,13 @@ class Workout {
     return iconSrc;
   }
 
+  // Passing in a number measured in kelvin and retrieve celsius
   _convertCelsius(kelvin) {
     const celsius = Math.round(Number(kelvin) - 273.15);
     return celsius;
   }
 
+  // Pass in array of coords to retrieve data about coresponding city and country
   async _reverseGeoCode(coordsArr) {
     try {
       const [lat, lng] = coordsArr;
@@ -95,15 +100,14 @@ class Workout {
 
       this.city = geoData.city;
       this.country = geoData.country;
-      console.log(geoData.city, geoData.country);
     } catch (err) {
       console.error(err);
     }
   }
 
+  // AJAX call to fetach data about the weather pass in coordinates
   async _getWeatherData(lat, lng) {
     try {
-      console.log(lat, lng);
       const getRequest = await fetch(
         `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&appid=${
           this.#keyWeather
@@ -113,9 +117,6 @@ class Workout {
         throw new Error('😟 Something went wrong with the get request');
 
       const dataWeather = await getRequest.json();
-
-      // if (!dataWeather.ok) return;
-      console.log(dataWeather);
 
       this._setWeatherData(
         dataWeather.current.clouds,
@@ -153,7 +154,6 @@ class Cycling extends Workout {
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
-    // this._reverseGeoCode(coords);
   }
 
   calcSpeed() {
@@ -163,6 +163,7 @@ class Cycling extends Workout {
   }
 }
 
+// DUMMY DATA
 // const run1 = new Running([39, -12], 5.2, 24, 178);
 // const cycling1 = new Cycling([39, -12], 27, 95, 523);
 // console.log(run1, cycling1);
@@ -205,7 +206,7 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
 
-    // for the sort button functionality
+    // For the sort button functionality
     btnSort.addEventListener('click', this._toggleSortBtn);
     sortBar.addEventListener('click', this._sortAndRender.bind(this));
 
@@ -248,14 +249,10 @@ class App {
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
-    // console.log(latitude, longitude);
-    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
 
-    console.log(this);
     this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
-    // console.log(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
@@ -281,12 +278,9 @@ class App {
   _toggleRemoveAllBtn() {
     // If workouts array is empty add hidden class
     if (this.#workouts.length === 0) {
-      console.log('💥 Hide remove all btn');
       btnsMenu.classList.add('btns-menu--hidden');
       // If workouts array has entries remove hidden class
     } else {
-      console.log('✅ Show remove all btn');
-      console.log(this.#workouts);
       btnsMenu.classList.remove('btns-menu--hidden');
     }
   }
@@ -313,20 +307,17 @@ class App {
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
+  // Function for user input validation
   _validInputs(...inputs) {
     return inputs.every(inp => Number.isFinite(inp));
   }
 
+  // Function for user input validation
   _allPositive(...inputs) {
     return inputs.every(inp => inp > 0);
   }
 
   _newWorkout(e) {
-    // const validInputs = (...inputs) =>
-    //   inputs.every(inp => Number.isFinite(inp));
-
-    // const allPositive = (...inputs) => inputs.every(inp => inp > 0);
-
     e.preventDefault();
 
     // Get data from form
@@ -378,7 +369,6 @@ class App {
     this.#workouts.push(workout);
 
     // Render workout on map as marker
-    console.log(workout);
     this._renderWorkoutMarker(workout);
 
     // Render workout on list
@@ -400,10 +390,7 @@ class App {
 
   async _setWeatherData(workout, lat, lng) {
     try {
-      console.log(workout);
-      console.log(lat, lng);
       const test = await workout._getWeatherData(lat, lng);
-      console.log(test);
       return test;
     } catch (err) {
       console.error(err);
@@ -411,15 +398,7 @@ class App {
   }
 
   _renderWorkoutMarker(workout) {
-    // console.log(workout);
-    // let workoutTest = workout;
-
-    // console.log(workoutTest);
     workout._reverseGeoCode(workout.coords).then(() => {
-      // const city = workout.city;
-      // const country = workout.country;
-      // console.log(city, country);
-
       // Brand icon
       const maptyIcon = L.icon({
         iconUrl: './assets/icon.png',
@@ -455,7 +434,6 @@ class App {
   _checkGeoApiRequest(workout) {
     // If the api reqeust was succesfull render country and city
     // If not render the default description
-    // console.log(workout);
 
     // Check for the workout types to get right description
     if (workout.type === 'running') {
@@ -583,12 +561,9 @@ class App {
     const workoutEl = e.target.closest('.workout');
 
     if (workoutEl === null) return;
-    console.log(workoutEl);
-
     const workout = this.#workouts.find(
       work => work._id === workoutEl.dataset.id
     );
-    console.log(workout);
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animate: true,
@@ -624,11 +599,6 @@ class App {
 
     this.#workouts = updatedWorkouts;
 
-    // console.log(updatedWorkouts);
-    // console.log(this.#workouts);
-    // console.log(workoutEl);
-    // console.log(deleteIcon);
-
     // Delete workout from Local Storage
     localStorage.removeItem('workouts');
     this._setLocalStorage();
@@ -661,14 +631,8 @@ class App {
 
     const valueElDataSet = valueEl?.dataset?.type;
 
-    // let dynamicValue;
-    // currElParrent.classList.contains('workout--running')
-    //   ? (dynamicValue = currElParrent.querySelector('#value-pace'))
-    //   : (dynamicValue = currElParrent.querySelector('#value-speed'));
-
-    // console.log(dynamicValue);
-
     // One of the element will always be null
+    // currElParrent points always to the current element
     const speedEl = currElParrent?.querySelector('#value-pace');
     const paceEl = currElParrent?.querySelector('#value-speed');
 
@@ -694,13 +658,8 @@ class App {
     const userInputField = document.querySelector('.form-edit__number');
 
     userInputField.focus();
-    console.log(currElParrent);
-    console.log(this.#workouts);
 
-    // _updateWorkoutArr();
-    console.log(valueEl);
-    console.log(valueElDataSet);
-
+    //  Adding an event listener as soon as the user input form appears on the page
     formEdit.addEventListener(
       'submit',
       function (e) {
@@ -712,9 +671,6 @@ class App {
         console.log(currentElId);
 
         if (
-          // !Number.isFinite(distance) ||
-          // !Number.isFinite(duration) ||
-          // !Number.isFinite(cadence)
           !this._validInputs(+userInputValue) ||
           !this._allPositive(+userInputValue)
         )
@@ -726,13 +682,11 @@ class App {
         // 3) Value that should  be updated
         this._updateWorkoutArr(currentElId, valueElDataSet, userInputValue);
 
-        // console.log(this.#workouts);
         formEdit.remove();
 
         if (userInputField.value === '') return;
         valueEl.textContent = userInputValue;
 
-        console.log(speedEl);
         // Updating the UI for calculations
         if (speedEl !== null) {
           const speedElData = speedEl.dataset.type;
@@ -742,7 +696,6 @@ class App {
           console.log(speedEl);
         }
 
-        console.log(paceEl);
         if (paceEl !== null) {
           const paceElData = paceEl.dataset.type;
           this._updateCalcUi(currentElId, paceElData, paceEl);
@@ -762,21 +715,10 @@ class App {
     let currentDirection = 'descending'; //default
     if (!el) return;
 
-    console.log(el);
-
-    // const arrow = el.querySelector('.arrow');
     const type = el.id;
-    console.log(type);
-
-    // set all arrows to default state (down)
-    // sortContainer
-    //   .querySelectorAll('.arrow')
-    //   .forEach(e => e.classList.remove('arrow__up'));
 
     // get which direction to sort
     const typeValues = this.#workouts.map(workout => {
-      console.log(workout);
-      console.log(workout[type]);
       return workout[type];
     });
 
@@ -787,16 +729,12 @@ class App {
       })
       .join('');
 
-    console.log(sortedAscending);
-
     const sortedDescending = typeValues
       .slice()
       .sort(function (a, b) {
         return b - a;
       })
       .join('');
-
-    console.log(sortedDescending);
 
     // Ascending order
     if (typeValues.join('') === sortedAscending) {
@@ -838,14 +776,10 @@ class App {
   _sortArray(array, currentDirection, type) {
     // sort opposite to the currentDirection
     if (currentDirection === 'ascending') {
-      array.sort(function (a, b) {
-        return b[type] - a[type];
-      });
+      array.sort((a, b) => b[type] - a[type]);
     }
     if (currentDirection === 'descending') {
-      array.sort(function (a, b) {
-        return a[type] - b[type];
-      });
+      array.sort((a, b) => a[type] - b[type]);
     }
   }
 
@@ -866,8 +800,6 @@ class App {
   }
 
   _updateCalcUi(dataId, dataType, el) {
-    console.log(dataType);
-    console.log(el);
     this.#workouts.forEach(workout => {
       if (workout._id === dataId) {
         if (dataType === 'speed') {
@@ -898,13 +830,11 @@ class App {
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
 
-    console.log(data);
     if (!data) return;
 
     // Restoring Object to running and cycling classes
     const restoredArr = data.map(workout => {
       if (workout.type === 'running') {
-        console.log(workout._weather);
         return new Running(
           workout.coords,
           workout.distance,
@@ -916,7 +846,6 @@ class App {
         );
       }
       if (workout.type === 'cycling') {
-        console.log(workout._weather);
         return new Cycling(
           workout.coords,
           workout.distance,
@@ -929,8 +858,6 @@ class App {
       }
     });
 
-    console.log(data);
-    console.log(restoredArr);
     this.#workouts = restoredArr;
   }
 
@@ -974,76 +901,3 @@ class App {
 }
 
 const app = new App();
-
-// _sortAndRender(e){
-//   const element = e.target.closest('.sort__button');
-//   let currentDirection = 'descending'; //default
-//   if (!element) return;
-//   const arrow = element.querySelector('.arrow');
-//   const type = element.dataset.type;
-
-//   // set all arrows to default state (down)
-//   sortContainer.querySelectorAll('.arrow').forEach(e=> e.classList.remove('arrow__up'));
-
-//   // get which direction to sort
-//   const typeValues = this.#workouts.map(workout => {return workout[type]})
-//   const sortedAscending = typeValues.slice().sort(function(a, b){return a-b}).join('');
-//   const sortedDescending = typeValues.slice().sort(function(a, b){return b-a}).join('');
-
-//   // compare sortedAscending array with values from #workout array to check how are they sorted
-//   // 1. case 1 ascending
-//   if (typeValues.join('') === sortedAscending) {
-//       currentDirection = 'ascending'
-
-//       arrow.classList.add('arrow__up')
-
-//   }
-//   // 2. case 2 descending
-//   if (typeValues.join('') === sortedDescending) {
-//       currentDirection = 'descending'
-
-//       arrow.classList.remove('arrow__up')
-
-//   }
-
-//   // sort main workouts array
-//   this._sortArray(this.#workouts, currentDirection, type);
-
-//   ///////// RE-RENDER ////////
-//   // clear rendered workouts from DOM
-//   containerWorkouts.querySelectorAll('.workout').forEach(workout => workout.remove());
-//   // clear workouts from map(to prevent bug in array order when deleting a single workout)
-//   this.#markers.forEach(marker=> marker.remove());
-//   //clear array
-//   this.#markers = [];
-//   // render list all again sorted
-//   this.#workouts.forEach(workout => {
-//       this._renderWorkout(workout);
-//       // create new markers and render them on map
-//       this._renderWorkoutMarker(workout);
-//   });
-//   // center map on the last item in array (this will be 1st workout on the list in the UI)
-//  const lastWorkout = this.#workouts[this.#workouts.length - 1];
-//  this._setIntoView(lastWorkout);
-
-// }
-// _sortArray(array,currentDirection,type){
-
-//   // sort opposite to the currentDirection
-//   if (currentDirection === 'ascending') {
-//       array.sort(function(a, b){return b[type]-a[type]});
-
-//   };
-//   if (currentDirection === 'descending') {
-//       array.sort(function(a, b){return a[type]-b[type]});
-
-//   };
-
-// };
-
-// _toggleSortBtns(){
-//   sortContainer.classList.toggle('zero__height');
-// };
-// _showDeleteMsg(){
-//   confMsg.classList.remove('msg__hidden');
-// };
