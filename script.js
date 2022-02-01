@@ -205,22 +205,13 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
 
+    // for the sort button functionality
     btnSort.addEventListener('click', this._toggleSortBtn);
+    sortBar.addEventListener('click', this._sortAndRender.bind(this));
 
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
 
-    // containerWorkouts.addEventListener(
-    //   'click',
-    //   function () {
-    //     this._moveToPopup();
-    //     this._editWorkouts();
-    //     this._deleteWorkout();
-    //   }.bind(this)
-    // );
-
-    // containerWorkouts.addEventListener('click', this._editWorkouts.bind(this));
-    // containerWorkouts.onclick(this._editWorkouts.bind(this));
-
+    // For the edit functionality
     containerWorkouts.addEventListener(
       'click',
       function (e) {
@@ -230,13 +221,14 @@ class App {
       }.bind(this)
     );
 
+    // For the overview button functionality
     btnOverview.addEventListener('click', this._showOverview.bind(this));
 
-    // containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
-
+    // For the delete all button functionality
     deleteAllWorkoutBtn.addEventListener('click', this.reset);
     btnError.addEventListener('click', this._deleteError);
 
+    // For the close window functionality for the forms
     window.addEventListener('load', () => this._toggleRemoveAllBtn());
     window.addEventListener('keydown', this._closeForm.bind(this));
   }
@@ -256,8 +248,8 @@ class App {
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
-    console.log(latitude, longitude);
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+    // console.log(latitude, longitude);
+    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
 
@@ -481,9 +473,11 @@ class App {
   }
 
   _renderWorkout(workout) {
-    console.log(workout);
+    let html = '';
 
-    let html = `
+    // Check if some weather data exist
+    if (workout._weather.clouds && workout._weather.humidity)
+      html += `
       <li class="workout workout--${workout.type}" data-id="${workout._id}">
         <div class=workout__heading-container>
           <h2 class="workout__title">${this._checkGeoApiRequest(workout)} 
@@ -506,10 +500,10 @@ class App {
         <img src="${
           workout._weather.iconUrl
         }" alt="weather-status-icon" class="weather__icon ${
-      this._checkWeatherIconBk(workout._weather.iconUrl)
-        ? 'weather__icon--bk-change'
-        : ''
-    }" />  
+        this._checkWeatherIconBk(workout._weather.iconUrl)
+          ? 'weather__icon--bk-change'
+          : ''
+      }" />  
         <span class="weather__value">${workout._weather.clouds}</span>
         <span class="weather__unit">%</span>
         </div>
@@ -523,8 +517,9 @@ class App {
           <span class="weather__value">💦  ${workout._weather.humidity}</span>
           <span class="weather__unit">%</span>
         </div>
+      `;
 
-
+    html += `
         <div class="workout__details">
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️' : '🚴‍♂️'
@@ -763,27 +758,37 @@ class App {
   }
 
   _sortAndRender(e) {
-    const element = e.target.closest('.sort__button');
+    const el = e.target.closest('.sort-bar__btn-radio');
     let currentDirection = 'descending'; //default
-    if (!element) return;
-    const arrow = element.querySelector('.arrow');
-    const type = element.dataset.type;
+    if (!el) return;
+
+    console.log(el);
+
+    // const arrow = el.querySelector('.arrow');
+    const type = el.id;
+    console.log(type);
 
     // set all arrows to default state (down)
-    sortContainer
-      .querySelectorAll('.arrow')
-      .forEach(e => e.classList.remove('arrow__up'));
+    // sortContainer
+    //   .querySelectorAll('.arrow')
+    //   .forEach(e => e.classList.remove('arrow__up'));
 
     // get which direction to sort
     const typeValues = this.#workouts.map(workout => {
+      console.log(workout);
+      console.log(workout[type]);
       return workout[type];
     });
+
     const sortedAscending = typeValues
       .slice()
       .sort(function (a, b) {
         return a - b;
       })
       .join('');
+
+    console.log(sortedAscending);
+
     const sortedDescending = typeValues
       .slice()
       .sort(function (a, b) {
@@ -791,44 +796,42 @@ class App {
       })
       .join('');
 
-    // compare sortedAscending array with values from #workout array to check how are they sorted
-    // 1. case 1 ascending
+    console.log(sortedDescending);
+
+    // Ascending order
     if (typeValues.join('') === sortedAscending) {
       currentDirection = 'ascending';
-
-      arrow.classList.add('arrow__up');
     }
-    // 2. case 2 descending
+    // Descending order
     if (typeValues.join('') === sortedDescending) {
       currentDirection = 'descending';
-
-      arrow.classList.remove('arrow__up');
     }
 
-    // sort main workouts array
+    // sort workouts array
     this._sortArray(this.#workouts, currentDirection, type);
 
-    ///////// RE-RENDER ////////
-    // clear rendered workouts from DOM
+    // Render all workouts again
+
+    // clear current rendered workouts from DOM
     containerWorkouts
       .querySelectorAll('.workout')
       .forEach(workout => workout.remove());
-    // clear workouts from map(to prevent bug in array order when deleting a single workout)
+
+    // clear workouts from map
     this.#markers.forEach(marker => marker.remove());
+
     //clear array
     this.#markers = [];
-    // render list all again sorted
+
+    // render workout list again sorted
     this.#workouts.forEach(workout => {
       this._renderWorkout(workout);
       // create new markers and render them on map
       this._renderWorkoutMarker(workout);
     });
-    // center map on the last item in array (this will be 1st workout on the list in the UI)
-    const lastWorkout = this.#workouts[this.#workouts.length - 1];
-    this._setIntoView(lastWorkout);
   }
 
-  _toggleSortBtn(e) {
+  _toggleSortBtn() {
     sortBar.classList.toggle('sort-bar--hidden');
   }
 
