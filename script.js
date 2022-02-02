@@ -49,23 +49,18 @@ class Workout {
   _setWeatherData(clouds, temp, humidity, windSpeed, weatherArray) {
     // clouds %
     this._weather.clouds = clouds;
-    console.log(clouds);
 
     // weather icon url
     this._weather.iconUrl = this._getWeatherIconUrl(weatherArray);
-    console.log(temp);
 
     // wind m/s
     this._weather.windSpeed = windSpeed;
-    console.log(humidity);
 
     // humidity %
     this._weather.humidity = humidity;
-    console.log(windSpeed);
 
     // temperatur kelvin
     this._weather.temp = this._convertCelsius(temp);
-    console.log(weatherArray);
   }
 
   // Pass in an array with an object inside
@@ -89,7 +84,6 @@ class Workout {
   async _reverseGeoCode(coordsArr) {
     try {
       const [lat, lng] = coordsArr;
-      console.log(lat, lng);
       const resData = await fetch(
         `https://geocode.xyz/${lat},${lng}?geoit=json`
         // `https://geocode.xyz/${lat},${lng}?geoit=json&auth=${this.#keyGeo}`
@@ -166,7 +160,6 @@ class Cycling extends Workout {
 // DUMMY DATA
 // const run1 = new Running([39, -12], 5.2, 24, 178);
 // const cycling1 = new Cycling([39, -12], 27, 95, 523);
-// console.log(run1, cycling1);
 
 ///////////////////////////
 // Application Architecture
@@ -591,8 +584,6 @@ class App {
     // Get the index in the workout array for the markers array
     let index;
     const updatedWorkouts = this.#workouts.filter((workout, i) => {
-      console.log(workout.id, workoutEl.dataset.id);
-      console.log(i);
       index = i;
       return workout._id !== workoutEl.dataset.id;
     });
@@ -608,14 +599,12 @@ class App {
 
     // Remove marker from array
     this.#markers.splice(index);
-    console.log(this.#markers);
     // location.reload();
   }
 
   _removeAllWorkouts() {
     // Removing all workouts from the DOM
     const allWorkouts = document.querySelectorAll('.workout');
-    console.log(allWorkouts);
     allWorkouts.forEach(workout => workout.remove());
 
     // Clearing local storage
@@ -665,10 +654,8 @@ class App {
       function (e) {
         e.preventDefault();
         const userInputValue = userInputField.value;
-        console.log(userInputValue);
 
         const currentElId = currElParrent.dataset.id;
-        console.log(currentElId);
 
         if (
           !this._validInputs(+userInputValue) ||
@@ -691,17 +678,11 @@ class App {
         if (speedEl !== null) {
           const speedElData = speedEl.dataset.type;
           this._updateCalcUi(currentElId, speedElData, speedEl);
-          console.log(currentElId);
-          console.log(speedElData);
-          console.log(speedEl);
         }
 
         if (paceEl !== null) {
           const paceElData = paceEl.dataset.type;
           this._updateCalcUi(currentElId, paceElData, paceEl);
-          console.log(currentElId);
-          console.log(paceElData);
-          console.log(paceEl);
         }
 
         // Update local storage
