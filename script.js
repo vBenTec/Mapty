@@ -275,16 +275,6 @@ class App {
     inputDistance.focus();
   }
 
-  _toggleRemoveAllBtn() {
-    // If workouts array is empty add hidden class
-    if (this.#workouts.length === 0) {
-      btnsMenu.classList.add('btns-menu--hidden');
-      // If workouts array has entries remove hidden class
-    } else {
-      btnsMenu.classList.remove('btns-menu--hidden');
-    }
-  }
-
   _hideForm() {
     // Empty Inputs
     inputDistance.value =
@@ -300,6 +290,16 @@ class App {
 
   _closeForm(e) {
     if (e.key === 'Escape') this._hideForm();
+  }
+
+  _toggleRemoveAllBtn() {
+    // If workouts array is empty add hidden class
+    if (this.#workouts.length === 0) {
+      btnsMenu.classList.add('btns-menu--hidden');
+      // If workouts array has entries remove hidden class
+    } else {
+      btnsMenu.classList.remove('btns-menu--hidden');
+    }
   }
 
   _toggleElevationField() {
@@ -431,25 +431,6 @@ class App {
     });
   }
 
-  _checkGeoApiRequest(workout) {
-    // If the api reqeust was succesfull render country and city
-    // If not render the default description
-
-    // Check for the workout types to get right description
-    if (workout.type === 'running') {
-      if (workout.city && workout.country) {
-        return `Running in ${workout.city}, ${workout.country}`;
-      } else return `${workout.description}`;
-    }
-
-    // Check for the workout types to get right description
-    if (workout.type === 'cycling') {
-      if (workout.city && workout.country) {
-        return `Cycling in ${workout.city}, ${workout.country}`;
-      } else return `${workout.description}`;
-    }
-  }
-
   _renderWorkout(workout) {
     let html = '';
 
@@ -555,6 +536,25 @@ class App {
     `;
 
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  _checkGeoApiRequest(workout) {
+    // If the api reqeust was succesfull render country and city
+    // If not render the default description
+
+    // Check for the workout types to get right description
+    if (workout.type === 'running') {
+      if (workout.city && workout.country) {
+        return `Running in ${workout.city}, ${workout.country}`;
+      } else return `${workout.description}`;
+    }
+
+    // Check for the workout types to get right description
+    if (workout.type === 'cycling') {
+      if (workout.city && workout.country) {
+        return `Cycling in ${workout.city}, ${workout.country}`;
+      } else return `${workout.description}`;
+    }
   }
 
   _moveToPopup(e) {
